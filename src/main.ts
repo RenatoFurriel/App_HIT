@@ -7,6 +7,7 @@ import { renderHome } from './ui/home'
 import { renderEditor } from './ui/editor'
 import { renderRun } from './ui/run'
 import { closeSheet } from './ui/sheet'
+import { completeLoginIfReturning } from './spotify/auth'
 import { h } from './ui/dom'
 import type { AppContext } from './ui/context'
 import type { Settings } from './types'
@@ -55,6 +56,13 @@ function render(): void {
 
 window.addEventListener('hashchange', render)
 render()
+
+// Se estamos voltando da tela de permissão do Spotify, o endereço traz o
+// código de autorização. Trocá-lo por um token é assíncrono, então a tela é
+// redesenhada quando terminar.
+void completeLoginIfReturning().then((outcome) => {
+  if (outcome !== 'none') render()
+})
 
 // ---- abertura -------------------------------------------------------------
 

@@ -1,6 +1,9 @@
 import { h, icon, ICONS, clear } from './dom'
 import { confirmSheet, closeSheet } from './sheet'
 import { createSession } from '../engine/session'
+import { COUNTDOWN_SECONDS } from '../audio'
+import { createMusicController } from '../spotify/player'
+import { isLoggedIn } from '../spotify/auth'
 import type { Segment } from '../engine/timeline'
 import { createAnimation, getExercise, REST_POSE, exerciseName } from '../exercises'
 import { createWakeLock } from './wakelock'
@@ -112,6 +115,70 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
   const warning = h('div', { class: 'warning' })
   warning.hidden = true
 
+  // ---- música ------------------------------------------------------------
+  // A música é independente do treino: o app só dá o play inicial. Pausar,
+  // pular ou terminar o treino não emitem nenhuma chamada ao Spotify — só os
+  // botões abaixo, e a redução de volume durante a contagem regressiva.
+
+  const trackLabel = h('div', { class: 'track', text: 'Iniciando a música…' })
+  const musicNotice = h('div', { class: 'warning' })
+  musicNotice.hidden = true
+
+  const musicToggle = h(
+    'button',
+    { class: 'music-btn', attrs: { 'aria-label': 'Pausar música' } },
+    icon(ICONS.pause, 18),
+  )
+
+  const musicSkip = h(
+    'button',
+    { class: 'music-btn', attrs: { 'aria-label': 'Pular faixa' } },
+    icon(ICONS.next, 18),
+  )
+
+  const musicOff = h(
+    'button',
+    { class: 'music-btn off', attrs: { 'aria-label': 'Desligar música' } },
+    icon(ICONS.musicOff, 18),
+  )
+
+  const musicBar = h(
+    'div',
+    { class: 'music-bar' },
+    icon(ICONS.music, 18),
+    trackLabel,
+    musicToggle,
+    musicSkip,
+    musicOff,
+  )
+  musicBar.hidden = true
+
+  const music =
+    workout.spotifyPlaylistUri && isLoggedIn()
+      ? createMusicController({
+          playlistUri: workout.spotifyPlaylistUri,
+          isDuckEnabled: () => ctx.getSettings().duckMusic,
+          onBoostBeeps: (boost) => ctx.beeper.setBoost(boost),
+          onChange: (status) => {
+            musicBar.hidden = !status.active
+            trackLabel.textContent = status.track ?? (status.playing ? 'Tocando' : 'Pausada')
+            musicToggle.replaceChildren(icon(status.playing ? ICONS.pause : ICONS.play, 18))
+            musicToggle.setAttribute(
+              'aria-label',
+              status.playing ? 'Pausar música' : 'Retomar música',
+            )
+            musicNotice.hidden = status.notice === null
+            musicNotice.textContent = status.notice ?? ''
+          },
+        })
+      : null
+
+  if (music) {
+    musicToggle.addEventListener('click', () => void music.togglePlay())
+    musicSkip.addEventListener('click', () => void music.skip())
+    musicOff.addEventListener('click', () => void music.turnOff())
+  }
+
   const body = h(
     'div',
     {},
@@ -125,6 +192,8 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
       h('div', {}, exerciseTitle, exerciseCue),
     ),
     nextUp,
+    musicBar,
+    musicNotice,
     warning,
   )
 
@@ -219,6 +288,10 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
         h('div', { class: 'sub', text: workout.name }),
       ),
       h('div', { class: 'spacer' }),
+      // A música continua tocando depois do treino, então os controles dela
+      // continuam à mão em vez de sumirem junto com o cronômetro.
+      musicBar,
+      musicNotice,
       h('button', {
         class: 'primary-btn',
         text: 'Voltar ao início',
@@ -243,6 +316,10 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
     }
 
     syncAudio(state)
+
+    // Abaixa a música só na contagem regressiva. É idempotente: chamar a cada
+    // quadro não gera chamada nenhuma ao Spotify enquanto o valor não muda.
+    music?.setDucked(state.phase === 'running' && state.remainingSec <= COUNTDOWN_SECONDS)
 
     const segment = state.segment
     if (segment) {
@@ -280,6 +357,9 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
     void wakeLock.release()
     closeSheet()
     document.removeEventListener('visibilitychange', onVisibility)
+    // Encerra a consulta periódica e desfaz a redução de volume, mas não para
+    // a música: quem decide isso é o usuário, no botão de desligar.
+    music?.dispose()
   }
 
   const onVisibility = (): void => {
@@ -304,6 +384,7 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
   void wakeLock.request()
 
   session.start(Date.now())
+  void music?.start()
   paint()
 
   // O roteador chama isto ao trocar de tela, para nada continuar rodando.

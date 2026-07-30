@@ -17,6 +17,24 @@ exercício é executado.
 - Dez exercícios de peso corporal, cada um com sua animação.
 - Funciona sem internet e mantém a tela acesa durante o treino.
 - Nada sai do aparelho: os treinos ficam guardados no próprio celular.
+- Spotify opcional: vincule uma playlist ao treino e ela começa junto com ele.
+
+## Spotify
+
+A música é **independente do treino**. O app dá o play inicial e nada mais:
+pausar, pular ou terminar o treino não mexem na reprodução. Só os botões da
+barra de música — pausar, pular faixa e desligar — e a redução de volume
+durante a contagem regressiva, que abaixa por cinco segundos e devolve o
+volume, sem nunca interromper a música. Essa redução se desliga nas
+Preferências.
+
+Requer **Spotify Premium** — a API de controle remoto é bloqueada em conta
+grátis — e um identificador de app, criado uma vez. O app explica o passo a
+passo em **Preferências → Conectar ao Spotify**, já com o endereço de retorno
+pronto para copiar.
+
+Sem internet, sem Premium ou sem login, a seção do Spotify some da tela e o
+timer funciona exatamente igual. O Spotify nunca é dependência para treinar.
 
 ## Rodando na sua máquina
 
@@ -69,6 +87,7 @@ src/
   audio/       bipes sintetizados na hora pela Web Audio API
   exercises/   biblioteca de exercícios e suas animações SVG
   storage/     leitura e escrita no armazenamento do navegador
+  spotify/     autenticação, chamadas à API e o controlador de música
   ui/          as três telas e o roteamento
 ```
 

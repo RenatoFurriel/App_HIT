@@ -101,8 +101,16 @@ describe('preferências', () => {
 
   it('grava e lê de volta', () => {
     const storage = createStorage(fakeStore())
-    storage.saveSettings({ soundEnabled: false, volume: 0.3 })
-    expect(storage.loadSettings()).toEqual({ soundEnabled: false, volume: 0.3 })
+    const settings = { soundEnabled: false, volume: 0.3, duckMusic: false }
+    storage.saveSettings(settings)
+    expect(storage.loadSettings()).toEqual(settings)
+  })
+
+  it('assume a redução de volume ligada quando o campo não existe', () => {
+    const store = fakeStore({
+      'hiit.settings.v1': JSON.stringify({ soundEnabled: true, volume: 0.5 }),
+    })
+    expect(createStorage(store).loadSettings().duckMusic).toBe(true)
   })
 
   it('limita o volume à faixa de zero a um', () => {

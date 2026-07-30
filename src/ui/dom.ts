@@ -61,6 +61,8 @@ export const ICONS = {
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
   sound: '<path d="M5 9v6h4l5 4V5L9 9z"/><path d="M17 8.5a5 5 0 010 7"/>',
   muted: '<path d="M5 9v6h4l5 4V5L9 9z"/><path d="M17 9l4 6M21 9l-4 6"/>',
+  music: '<circle cx="7" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M10 18V6l11-2v12"/>',
+  musicOff: '<circle cx="7" cy="18" r="3"/><path d="M10 18V8m0-2V6l11-2v6M4 4l16 16"/>',
 } as const
 
 export function clear(node: HTMLElement): void {

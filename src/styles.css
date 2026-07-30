@@ -23,6 +23,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Um `display` declarado numa classe vence a regra padrão do navegador para
+   `[hidden]`. Sem isto, esconder a barra de música não teria efeito nenhum. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   height: 100%;
@@ -445,6 +451,79 @@ button {
   margin-top: 2px;
 }
 
+.sheet-section {
+  font-size: 11px;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 18px 20px 4px;
+  border-top: 1px solid var(--line-soft);
+  margin-top: 8px;
+}
+
+.sheet-note {
+  padding: 4px 20px 8px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.sheet-note p {
+  margin: 6px 0;
+}
+
+.sheet-note ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.sheet-note li {
+  margin: 7px 0;
+}
+
+.sheet-note b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sheet-note code {
+  display: inline-block;
+  background: var(--card);
+  border-radius: 6px;
+  padding: 4px 7px;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--work);
+  word-break: break-all;
+}
+
+.sheet-item.danger {
+  color: var(--danger);
+}
+
+.field-input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  padding: 12px 14px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--work);
+}
+
+.summary.tappable:active {
+  background: #22262d;
+}
+
 /* Execução ---------------------------------------------------------------- */
 
 .run {
@@ -589,6 +668,45 @@ button {
   height: 64px;
   background: var(--phase);
   color: #08120f;
+}
+
+.music-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 14px;
+  color: var(--muted);
+}
+
+.music-bar .track {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  flex: none;
+}
+
+.music-btn:active {
+  background: #2c313a;
+}
+
+.music-btn.off {
+  color: var(--danger);
 }
 
 .warning {

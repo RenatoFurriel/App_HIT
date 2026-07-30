@@ -64,6 +64,9 @@ function parseWorkout(raw: unknown): Workout | null {
   if (typeof w['spotifyPlaylistUri'] === 'string') {
     workout.spotifyPlaylistUri = w['spotifyPlaylistUri']
   }
+  if (typeof w['spotifyPlaylistName'] === 'string') {
+    workout.spotifyPlaylistName = w['spotifyPlaylistName']
+  }
 
   return workout
 }
@@ -127,6 +130,8 @@ export function createStorage(store: KeyValueStore = defaultStore()) {
           volume: isFiniteNumber(s['volume'])
             ? Math.min(1, Math.max(0, s['volume']))
             : DEFAULT_SETTINGS.volume,
+          duckMusic:
+            typeof s['duckMusic'] === 'boolean' ? s['duckMusic'] : DEFAULT_SETTINGS.duckMusic,
         }
       } catch {
         return { ...DEFAULT_SETTINGS }

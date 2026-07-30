@@ -282,6 +282,20 @@ repositório.
 
 ## 6. Fase 2 — Spotify
 
+### O princípio que rege esta fase
+
+**A música é independente do treino.** O app dá o pontapé inicial e nada
+mais: uma vez tocando, ela continua até que o usuário a pause ou a desligue.
+Pausar o treino não pausa a música. Terminar o treino não para a música. Sair
+da tela não para a música.
+
+Isso não é só preferência de uso — elimina toda a sincronização de estado
+entre duas máquinas que rodam em relógios diferentes, que era a parte mais
+frágil do desenho anterior.
+
+A única coisa que o app mexe sozinho é o volume, por cinco segundos, e mesmo
+isso é desligável.
+
 ### Fluxo
 
 **Autenticação:** OAuth 2.0 com PKCE, que é o fluxo próprio para aplicações
@@ -295,30 +309,39 @@ Escopos: `playlist-read-private`, `playlist-read-collaborative`,
 
 Tokens ficam em `localStorage` e são renovados pelo `refresh_token`.
 
+O identificador do app do Spotify é informado uma vez nas Preferências e
+guardado no aparelho. Ele não é segredo — no fluxo PKCE o identificador é
+público por desenho —, mas mantê-lo fora do código evita que o app dependa de
+um novo build para funcionar.
+
 **No editor:** um campo de playlist que lista as playlists da conta.
 
 **Na execução:**
 
-| Evento do treino | Chamada ao Spotify |
+| Gatilho | Chamada ao Spotify |
 | --- | --- |
-| Iniciar | `PUT /me/player/play` com o `context_uri` da playlist |
-| Pausar | `PUT /me/player/pause` |
-| Retomar | `PUT /me/player/play` |
-| Sair ou terminar | `PUT /me/player/pause` |
+| Iniciar o treino | `PUT /me/player/play` com o `context_uri` da playlist |
+| Botão de pausar música | `PUT /me/player/pause` |
+| Botão de retomar música | `PUT /me/player/play` |
+| Botão de desligar música | `PUT /me/player/pause` e some com os controles |
 | Botão de pular faixa | `POST /me/player/next` |
-| Entrar nos últimos 5 s | `PUT /me/player/volume` para 30% |
-| Virar a fase | `PUT /me/player/volume` restaurando o valor original |
+| Entrar nos últimos 5 s | `PUT /me/player/volume` para 30% do valor atual |
+| Virar a fase | `PUT /me/player/volume` restaurando o valor anterior |
+| A cada 8 s, com a tela aberta | `GET /me/player` para o nome da faixa e o volume |
 
-São no máximo duas chamadas por fase — bem abaixo de qualquer limite de
-requisições.
+Nada mais mexe na reprodução. Em particular, **pausar, pular, voltar,
+terminar ou sair do treino não emitem nenhuma chamada ao Spotify.**
 
-**Sem dispositivo ativo:** se `GET /me/player/devices` não retornar nenhum
-dispositivo, o app instrui a abrir o Spotify e tocar qualquer música uma vez,
-em vez de falhar em silêncio.
+**Redução de volume:** liga e desliga nas Preferências, e vem ligada. Ela
+abaixa, nunca interrompe — a música continua tocando durante a contagem.
 
-**Degradação:** sem internet, sem Premium ou sem login, a seção do Spotify
-some da tela e o timer funciona exatamente igual. **O Spotify nunca é
-dependência para treinar.**
+**Sem dispositivo ativo:** se `GET /me/player` não retornar dispositivo, o
+app instrui a abrir o Spotify e tocar qualquer música uma vez, em vez de
+falhar em silêncio.
+
+**Degradação:** sem internet, sem Premium, sem identificador de app ou sem
+login, a seção do Spotify some da tela e o timer funciona exatamente igual.
+**O Spotify nunca é dependência para treinar.**
 
 ---
 

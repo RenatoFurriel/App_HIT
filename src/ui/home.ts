@@ -1,5 +1,6 @@
 import { h, icon, ICONS } from './dom'
 import { openSheet, closeSheet } from './sheet'
+import { spotifySettingsRows } from './spotify-ui'
 import { workoutDurationSec, formatDuration } from '../engine/timeline'
 import type { AppContext } from './context'
 import type { Workout } from '../types'
@@ -120,6 +121,10 @@ function settingsSheet(ctx: AppContext): void {
           void ctx.beeper.unlock().then(() => ctx.beeper.scheduleSegment('work', 0))
         },
       },
+    }),
+    ...spotifySettingsRows(ctx, () => {
+      closeSheet()
+      settingsSheet(ctx)
     }),
   )
 

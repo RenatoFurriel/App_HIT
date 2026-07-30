@@ -4,6 +4,8 @@ import { createAnimation, getExercise } from '../exercises'
 import { workoutDurationSec, formatDuration } from '../engine/timeline'
 import { newWorkoutId } from '../storage'
 import { DEFAULT_WORKOUT, type Workout } from '../types'
+import { isLoggedIn } from '../spotify/auth'
+import { pickPlaylist } from './spotify-ui'
 import type { AppContext } from './context'
 
 const SECONDS_OPTIONS = [
@@ -147,6 +149,46 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
     )
   }
 
+  /**
+   * A playlist é opcional e só aparece com o Spotify conectado. Sem ela o
+   * treino funciona igual — o Spotify nunca é dependência para treinar.
+   */
+  const playlistRow = (): HTMLElement => {
+    const connected = isLoggedIn()
+    const label = draft.spotifyPlaylistName ?? (draft.spotifyPlaylistUri ? 'Playlist salva' : null)
+
+    if (!connected) {
+      return h(
+        'div',
+        { class: 'summary' },
+        h('span', { class: 'muted' }, icon(ICONS.music, 16), h('span', { text: ' Playlist' })),
+        h('span', { class: 'muted', text: 'conecte o Spotify' }),
+      )
+    }
+
+    return h(
+      'button',
+      {
+        class: 'summary tappable',
+        on: {
+          click: () =>
+            pickPlaylist((playlist) => {
+              if (playlist) {
+                draft.spotifyPlaylistUri = playlist.uri
+                draft.spotifyPlaylistName = playlist.name
+              } else {
+                delete draft.spotifyPlaylistUri
+                delete draft.spotifyPlaylistName
+              }
+              render()
+            }),
+        },
+      },
+      h('span', { class: 'muted' }, icon(ICONS.music, 16), h('span', { text: ' Playlist' })),
+      h('span', { text: label ?? 'escolher' }),
+    )
+  }
+
   const save = (): void => {
     if (draft.exerciseIds.length === 0) return
     draft.name = draft.name.trim() || 'Treino sem nome'
@@ -246,6 +288,7 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
         h('span', { text: 'Adicionar exercício' }),
       ),
       summary,
+      playlistRow(),
     ]
 
     if (!isNew) {

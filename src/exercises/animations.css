@@ -1,0 +1,392 @@
+/* Silhuetas dos exercícios.
+   Todas as articulações giram em torno de um ponto fixo do viewBox — daí o
+   `transform-box: view-box`, que faz `transform-origin` ser lido em unidades
+   do próprio desenho em vez de na caixa do elemento. */
+
+.ex {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: inherit;
+}
+
+.ex line,
+.ex polyline {
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.ex circle {
+  fill: currentColor;
+}
+
+.ex .ground {
+  stroke-width: 3;
+  opacity: 0.3;
+}
+
+.ex g,
+.ex line,
+.ex polyline,
+.ex circle {
+  transform-box: view-box;
+}
+
+/* Polichinelo ------------------------------------------------------------ */
+
+.ex-polichinelo .body {
+  transform-origin: 50px 64px;
+  animation: pol-body 0.56s ease-in-out infinite;
+}
+.ex-polichinelo .armL,
+.ex-polichinelo .armR {
+  transform-origin: 50px 30px;
+  animation-duration: 0.56s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.ex-polichinelo .armL {
+  animation-name: pol-arm-l;
+}
+.ex-polichinelo .armR {
+  animation-name: pol-arm-r;
+}
+.ex-polichinelo .legL,
+.ex-polichinelo .legR {
+  transform-origin: 50px 64px;
+  animation-duration: 0.56s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.ex-polichinelo .legL {
+  animation-name: pol-leg-l;
+}
+.ex-polichinelo .legR {
+  animation-name: pol-leg-r;
+}
+
+@keyframes pol-body {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes pol-arm-l {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(124deg); }
+}
+@keyframes pol-arm-r {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-124deg); }
+}
+@keyframes pol-leg-l {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg); }
+}
+@keyframes pol-leg-r {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+/* Agachamento ------------------------------------------------------------ */
+
+.ex-agachamento .body {
+  animation: sq-body 1.7s ease-in-out infinite;
+}
+.ex-agachamento .arm {
+  transform-origin: 53px 32px;
+  animation: sq-arm 1.7s ease-in-out infinite;
+}
+.ex-agachamento .upper {
+  transform-origin: 48px 64px;
+  animation: sq-upper 1.7s ease-in-out infinite;
+}
+.ex-agachamento .thigh {
+  transform-origin: 48px 64px;
+  animation: sq-thigh 1.7s ease-in-out infinite;
+}
+.ex-agachamento .shin {
+  transform-origin: 48px 86px;
+  animation: sq-shin 1.7s ease-in-out infinite;
+}
+
+@keyframes sq-body {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(17px); }
+}
+@keyframes sq-upper {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes sq-thigh {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-45deg); }
+}
+@keyframes sq-shin {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(85deg); }
+}
+@keyframes sq-arm {
+  0%, 100% { transform: rotate(10deg); }
+  50% { transform: rotate(-22deg); }
+}
+
+/* Flexão ----------------------------------------------------------------- */
+
+.ex-flexao .body {
+  transform-origin: 118px 82px;
+  animation: pu-body 1.5s ease-in-out infinite;
+}
+.ex-flexao .armAnchor {
+  transform-origin: 40px 104px;
+  animation: pu-arm 1.5s ease-in-out infinite;
+}
+
+@keyframes pu-body {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
+}
+@keyframes pu-arm {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.8); }
+}
+
+/* Burpee ----------------------------------------------------------------- */
+
+.ex-burpee .body {
+  transform-origin: 48px 64px;
+  animation: bu-body 2.4s ease-in-out infinite;
+}
+.ex-burpee .upper {
+  transform-origin: 48px 64px;
+  animation: bu-upper 2.4s ease-in-out infinite;
+}
+.ex-burpee .arm {
+  transform-origin: 53px 32px;
+  animation: bu-arm 2.4s ease-in-out infinite;
+}
+.ex-burpee .thigh {
+  transform-origin: 48px 64px;
+  animation: bu-thigh 2.4s ease-in-out infinite;
+}
+.ex-burpee .shin {
+  transform-origin: 52px 86px;
+  animation: bu-shin 2.4s ease-in-out infinite;
+}
+
+/* A fase de prancha gira a figura inteira: o tronco, que apontava para cima,
+   passa a apontar para a esquerda, e as pernas, que apontavam para baixo,
+   se estendem para a direita. O braço recebe uma rotação própria para
+   continuar apoiado no chão. */
+@keyframes bu-body {
+  0%, 10% { transform: translate(0, 0) rotate(0deg); }
+  28% { transform: translate(0, 17px) rotate(0deg); }
+  44%, 58% { transform: translate(-4px, 30px) rotate(-76deg); }
+  74% { transform: translate(0, 17px) rotate(0deg); }
+  88% { transform: translate(0, -14px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes bu-upper {
+  0%, 10% { transform: rotate(0deg); }
+  28% { transform: rotate(24deg); }
+  44%, 58% { transform: rotate(4deg); }
+  74% { transform: rotate(24deg); }
+  88%, 100% { transform: rotate(0deg); }
+}
+@keyframes bu-arm {
+  0%, 10% { transform: rotate(0deg); }
+  28% { transform: rotate(40deg); }
+  44%, 58% { transform: rotate(104deg); }
+  74% { transform: rotate(40deg); }
+  88% { transform: rotate(-120deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes bu-thigh {
+  0%, 10% { transform: rotate(0deg); }
+  28% { transform: rotate(-45deg); }
+  44%, 58% { transform: rotate(-6deg); }
+  74% { transform: rotate(-45deg); }
+  88%, 100% { transform: rotate(0deg); }
+}
+@keyframes bu-shin {
+  0%, 10% { transform: rotate(0deg); }
+  28% { transform: rotate(85deg); }
+  44%, 58% { transform: rotate(4deg); }
+  74% { transform: rotate(85deg); }
+  88%, 100% { transform: rotate(0deg); }
+}
+
+/* Prancha ---------------------------------------------------------------- */
+
+.ex-prancha .body {
+  transform-origin: 118px 84px;
+  animation: pl-body 3.2s ease-in-out infinite;
+}
+
+@keyframes pl-body {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-1.4deg); }
+}
+
+/* Abdominal -------------------------------------------------------------- */
+
+.ex-abdominal .upper {
+  transform-origin: 66px 90px;
+  animation: ab-upper 2s ease-in-out infinite;
+}
+.ex-abdominal .arm {
+  transform-origin: 36px 84px;
+  animation: ab-arm 2s ease-in-out infinite;
+}
+
+@keyframes ab-upper {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 60% { transform: rotate(30deg); }
+}
+@keyframes ab-arm {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 60% { transform: rotate(-14deg); }
+}
+
+/* Mountain climber ------------------------------------------------------- */
+
+.ex-mountain-climber .legA,
+.ex-mountain-climber .legB {
+  transform-origin: 96px 78px;
+  animation: mc-leg 0.52s ease-in-out infinite;
+}
+.ex-mountain-climber .legB {
+  animation-delay: -0.26s;
+}
+
+@keyframes mc-leg {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(75deg); }
+}
+
+/* Corrida parada --------------------------------------------------------- */
+
+.ex-corrida-parada .body {
+  transform-origin: 50px 110px;
+  animation: run-body 0.32s ease-in-out infinite;
+}
+.ex-corrida-parada .legA,
+.ex-corrida-parada .legB {
+  transform-origin: 50px 64px;
+  animation: run-thigh 0.64s ease-in-out infinite;
+}
+.ex-corrida-parada .shinA,
+.ex-corrida-parada .shinB {
+  transform-origin: 50px 86px;
+  animation: run-shin 0.64s ease-in-out infinite;
+}
+.ex-corrida-parada .legB,
+.ex-corrida-parada .shinB {
+  animation-delay: -0.32s;
+}
+.ex-corrida-parada .armA,
+.ex-corrida-parada .armB {
+  transform-origin: 50px 31px;
+  animation: run-arm 0.64s ease-in-out infinite;
+}
+.ex-corrida-parada .armB {
+  animation-delay: -0.32s;
+}
+
+@keyframes run-body {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes run-thigh {
+  0%, 100% { transform: rotate(18deg); }
+  50% { transform: rotate(-68deg); }
+}
+@keyframes run-shin {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(62deg); }
+}
+@keyframes run-arm {
+  0%, 100% { transform: rotate(24deg); }
+  50% { transform: rotate(-26deg); }
+}
+
+/* Afundo ----------------------------------------------------------------- */
+
+.ex-afundo .body {
+  animation: lu-body 2.2s ease-in-out infinite;
+}
+.ex-afundo .front,
+.ex-afundo .back {
+  transform-origin: 52px 64px;
+}
+.ex-afundo .frontShin,
+.ex-afundo .backShin {
+  transform-origin: 52px 86px;
+}
+.ex-afundo .front {
+  animation: lu-front 2.2s ease-in-out infinite;
+}
+.ex-afundo .frontShin {
+  animation: lu-front-shin 2.2s ease-in-out infinite;
+}
+.ex-afundo .back {
+  animation: lu-back 2.2s ease-in-out infinite;
+}
+.ex-afundo .backShin {
+  animation: lu-back-shin 2.2s ease-in-out infinite;
+}
+
+@keyframes lu-body {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@keyframes lu-front {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(-40deg); }
+}
+@keyframes lu-front-shin {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(40deg); }
+}
+@keyframes lu-back {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(26deg); }
+}
+@keyframes lu-back-shin {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(-10deg); }
+}
+
+/* Ponte de glúteo -------------------------------------------------------- */
+
+.ex-ponte .torso {
+  transform-origin: 31px 94px;
+  animation: br-torso 2.4s ease-in-out infinite;
+}
+.ex-ponte .thigh {
+  transform-origin: 94px 74px;
+  animation: br-thigh 2.4s ease-in-out infinite;
+}
+
+@keyframes br-torso {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 62% { transform: rotate(-13deg); }
+}
+@keyframes br-thigh {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 62% { transform: rotate(21deg); }
+}
+
+/* Pose de descanso ------------------------------------------------------- */
+
+.ex-rest .body {
+  transform-origin: 50px 110px;
+  animation: rest-body 3.4s ease-in-out infinite;
+}
+
+@keyframes rest-body {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-2px) scaleY(1.012); }
+}

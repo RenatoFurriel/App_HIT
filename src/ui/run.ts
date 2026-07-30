@@ -121,7 +121,17 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
   // botões abaixo, e a redução de volume durante a contagem regressiva.
 
   const trackLabel = h('div', { class: 'track', text: 'Iniciando a música…' })
-  const musicNotice = h('div', { class: 'warning' })
+
+  const noticeText = h('div', {})
+  const retryButton = h('button', { class: 'notice-btn', text: 'Tentar de novo' })
+  const openSpotify = h('a', {
+    class: 'notice-btn',
+    text: 'Abrir o Spotify',
+    attrs: { href: 'spotify:', rel: 'noreferrer' },
+  })
+  const noticeActions = h('div', { class: 'notice-actions' }, openSpotify, retryButton)
+  noticeActions.hidden = true
+  const musicNotice = h('div', { class: 'warning' }, noticeText, noticeActions)
   musicNotice.hidden = true
 
   const musicToggle = h(
@@ -161,22 +171,30 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
           onBoostBeeps: (boost) => ctx.beeper.setBoost(boost),
           onChange: (status) => {
             musicBar.hidden = !status.active
-            trackLabel.textContent = status.track ?? (status.playing ? 'Tocando' : 'Pausada')
+            trackLabel.textContent =
+              status.track ?? (status.playing ? 'Tocando' : 'Música parada')
             musicToggle.replaceChildren(icon(status.playing ? ICONS.pause : ICONS.play, 18))
             musicToggle.setAttribute(
               'aria-label',
-              status.playing ? 'Pausar música' : 'Retomar música',
+              status.playing ? 'Pausar música' : 'Tocar música',
             )
+            noticeText.textContent = status.notice ?? ''
+            noticeActions.hidden = !status.needsDevice
             musicNotice.hidden = status.notice === null
-            musicNotice.textContent = status.notice ?? ''
           },
         })
       : null
+
+  // Sem playlist ou sem conta conectada não há barra nenhuma; o treino é o
+  // mesmo. Com elas, a barra fica visível desde o início — inclusive quando o
+  // primeiro play falha, que é justamente quando os controles fazem falta.
+  musicBar.hidden = music === null
 
   if (music) {
     musicToggle.addEventListener('click', () => void music.togglePlay())
     musicSkip.addEventListener('click', () => void music.skip())
     musicOff.addEventListener('click', () => void music.turnOff())
+    retryButton.addEventListener('click', () => void music.togglePlay())
   }
 
   const body = h(
@@ -301,6 +319,7 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
     )
   }
 
+  let lastPaused: boolean | null = null
   let frame = 0
   const stopLoop = (): void => {
     if (frame) cancelAnimationFrame(frame)
@@ -342,9 +361,15 @@ export function renderRun(ctx: AppContext, id: string): HTMLElement {
       paintNextUp(segment)
     }
 
+    // Só troca o ícone quando o estado muda. Refazer o conteúdo do botão a
+    // cada quadro é desperdício e, num toque, o elemento sob o dedo some no
+    // meio do gesto.
     const paused = state.phase === 'paused'
-    mainButton.replaceChildren(icon(paused ? ICONS.play : ICONS.pause, 24))
-    mainButton.setAttribute('aria-label', paused ? 'Retomar' : 'Pausar')
+    if (paused !== lastPaused) {
+      lastPaused = paused
+      mainButton.replaceChildren(icon(paused ? ICONS.play : ICONS.pause, 24))
+      mainButton.setAttribute('aria-label', paused ? 'Retomar' : 'Pausar')
+    }
 
     frame = requestAnimationFrame(paint)
   }

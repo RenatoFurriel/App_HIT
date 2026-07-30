@@ -2,21 +2,26 @@ import { fetchPlayerState, nextTrack, pause, play, setVolume, type Failure } fro
 
 /** Fração do volume original durante a contagem regressiva. */
 const DUCK_FACTOR = 0.3
-const POLL_MS = 8000
+const POLL_MS = 5000
 
 export interface MusicStatus {
-  /** Verdadeiro entre o primeiro play e o botão de desligar. */
+  /** Controla a exibição da barra. Verdadeiro até o usuário desligar a música. */
   active: boolean
   playing: boolean
   track: string | null
-  /** Mensagem a exibir uma vez, quando algo não sai como esperado. */
+  /** Mensagem a exibir quando algo não sai como esperado. */
   notice: string | null
+  /**
+   * Verdadeiro quando o Spotify não tem nenhum dispositivo tocando. A tela usa
+   * isto para oferecer o atalho de abrir o Spotify e tentar de novo.
+   */
+  needsDevice: boolean
 }
 
 const FAILURE_NOTICE: Record<Failure, string> = {
   'no-session': 'A sessão do Spotify expirou. Entre de novo nas Preferências.',
   'no-device':
-    'Nenhum dispositivo tocando. Abra o Spotify, toque qualquer música uma vez e tente de novo.',
+    'O Spotify precisa estar tocando em algum aparelho para receber comandos. Abra o Spotify, dê play em qualquer música e volte aqui.',
   forbidden: 'O Spotify recusou o comando. O controle remoto exige uma conta Premium.',
   offline: 'Sem internet — a música não pôde ser comandada. O treino continua normalmente.',
   error: 'O Spotify não respondeu como esperado.',
@@ -25,6 +30,7 @@ const FAILURE_NOTICE: Record<Failure, string> = {
 export interface MusicController {
   /** Único disparo automático do app. Tudo o mais parte de um toque do usuário. */
   start(): Promise<void>
+  /** Liga a música se estiver parada, pausa se estiver tocando. */
   togglePlay(): Promise<void>
   turnOff(): Promise<void>
   skip(): Promise<void>
@@ -43,10 +49,14 @@ export function createMusicController(options: {
 }): MusicController {
   const { playlistUri, isDuckEnabled, onBoostBeeps, onChange } = options
 
-  let active = false
+  // A barra nasce visível. Escondê-la enquanto o primeiro play não desse certo
+  // deixava o usuário sem nenhum controle justamente quando algo dava errado.
+  let active = true
   let playing = false
   let track: string | null = null
   let notice: string | null = null
+  let needsDevice = false
+  let startedContext = false
 
   let baselineVolume: number | null = null
   let ducked = false
@@ -54,20 +64,34 @@ export function createMusicController(options: {
   let duckingSupported = true
   let poller: ReturnType<typeof setInterval> | null = null
 
-  const status = (): MusicStatus => ({ active, playing, track, notice })
+  const status = (): MusicStatus => ({ active, playing, track, notice, needsDevice })
   const emit = (): void => onChange(status())
 
   const fail = (reason: Failure): void => {
     notice = FAILURE_NOTICE[reason]
+    needsDevice = reason === 'no-device'
     emit()
   }
 
   const refresh = async (): Promise<void> => {
     const result = await fetchPlayerState()
-    if (!result.ok) return
+    if (!result.ok) {
+      // A consulta periódica não deve encher a tela de avisos; ela só corrige
+      // o caso em que o aparelho voltou a existir.
+      if (result.reason === 'no-device') needsDevice = true
+      emit()
+      return
+    }
+
     const state = result.value
     playing = state?.isPlaying ?? false
     track = state?.track ?? null
+
+    if (state !== null) {
+      needsDevice = false
+      if (playing) notice = null
+    }
+
     // Enquanto abaixado, o volume lido é o reduzido — guardar isso apagaria
     // o valor original, e a música nunca voltaria ao normal.
     if (!ducked && typeof state?.volume === 'number') baselineVolume = state.volume
@@ -94,37 +118,59 @@ export function createMusicController(options: {
     ducked = false
     onBoostBeeps(true)
     notice =
-      'Não dá para abaixar o volume neste dispositivo — é uma limitação do Spotify. Os bipes foram reforçados.'
+      'Não dá para abaixar o volume neste aparelho — é uma limitação do Spotify. Os bipes foram reforçados.'
     emit()
     return false
   }
 
+  /** Liga a playlist do treino. Serve tanto para o começo quanto para o "tentar de novo". */
+  const playContext = async (): Promise<void> => {
+    const result = await play(playlistUri)
+    if (!result.ok) {
+      playing = false
+      fail(result.reason)
+      return
+    }
+    startedContext = true
+    playing = true
+    notice = null
+    needsDevice = false
+    emit()
+    setTimeout(() => void refresh(), 800)
+  }
+
   return {
     async start() {
-      const result = await play(playlistUri)
-      if (!result.ok) {
-        fail(result.reason)
-        return
-      }
-      active = true
-      playing = true
-      notice = null
-      emit()
       startPolling()
-      void refresh()
+      await playContext()
     },
 
     async togglePlay() {
-      const wasPlaying = playing
-      // Otimista: a interface responde na hora e a consulta seguinte corrige
-      // se o Spotify discordar.
-      playing = !wasPlaying
+      if (playing) {
+        playing = false
+        notice = null
+        emit()
+        const result = await pause()
+        if (!result.ok) {
+          playing = true
+          fail(result.reason)
+        }
+        return
+      }
+
+      // Nada tocando: se a playlist nunca chegou a rodar, é ela que deve
+      // começar; se já rodou, retomamos de onde parou.
+      if (!startedContext) {
+        await playContext()
+        return
+      }
+
+      playing = true
       notice = null
       emit()
-
-      const result = wasPlaying ? await pause() : await play()
+      const result = await play()
       if (!result.ok) {
-        playing = wasPlaying
+        playing = false
         fail(result.reason)
       }
     },
@@ -138,6 +184,7 @@ export function createMusicController(options: {
       playing = false
       track = null
       notice = null
+      needsDevice = false
       emit()
     },
 
@@ -149,11 +196,11 @@ export function createMusicController(options: {
         return
       }
       // A faixa nova demora um instante para aparecer no estado do player.
-      setTimeout(() => void refresh(), 600)
+      setTimeout(() => void refresh(), 800)
     },
 
     setDucked(next) {
-      if (!active || !duckingSupported || !isDuckEnabled()) return
+      if (!active || !playing || !duckingSupported || !isDuckEnabled()) return
       if (next === ducked || duckInFlight) return
       if (baselineVolume === null) return
 

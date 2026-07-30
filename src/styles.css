@@ -719,6 +719,26 @@ button {
   margin-top: 12px;
 }
 
+.notice-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.notice-btn {
+  background: #3d2f18;
+  color: #fac775;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.notice-btn:active {
+  background: #4a3a1e;
+}
+
 .finished {
   text-align: center;
   padding: 30px 0;

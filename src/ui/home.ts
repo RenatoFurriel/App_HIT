@@ -37,7 +37,26 @@ function workoutCard(workout: Workout, ctx: AppContext): HTMLElement {
     h(
       'div',
       { class: 'info' },
-      h('div', { class: 'name', text: workout.name }),
+      h(
+        'div',
+        { class: 'name-row' },
+        h('div', { class: 'name', text: workout.name }),
+        // Marca de relance quais treinos têm playlist vinculada — sem isso, a
+        // única forma de saber era abrir o editor.
+        workout.spotifyPlaylistUri
+          ? h(
+              'span',
+              {
+                class: 'has-music',
+                attrs: {
+                  title: workout.spotifyPlaylistName ?? 'Com playlist',
+                  'aria-label': 'Este treino tem playlist',
+                },
+              },
+              icon(ICONS.music, 15),
+            )
+          : null,
+      ),
       h(
         'div',
         { class: 'tags' },

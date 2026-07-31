@@ -147,12 +147,27 @@ button {
   min-width: 0;
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
 .workout-card .name {
   font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.has-music {
+  color: var(--work);
+  display: grid;
+  place-items: center;
+  flex: none;
 }
 
 .tags {
@@ -275,9 +290,39 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.stepper .value.accent {
+.stepper .value.accent,
+.value.accent {
   background: #14453a;
   color: #9fe1cb;
+}
+
+/* A playlist não tem passo para mais e para menos, então ocupa a largura que
+   os botões do stepper deixariam vazia. */
+.value.wide {
+  min-width: 74px;
+  max-width: 62%;
+  height: 40px;
+  border-radius: 10px;
+  background: #22262d;
+  font-size: 15px;
+  padding: 0 14px;
+  /* `display: block` em vez de grid: o recorte com reticências depende de um
+     contexto de linha, que o grid não fornece. */
+  display: block;
+  line-height: 40px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value.wide:active {
+  background: #2c313a;
+}
+
+.muted-value {
+  color: var(--dim);
+  font-size: 14px;
 }
 
 .ex-row {

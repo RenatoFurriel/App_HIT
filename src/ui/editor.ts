@@ -150,42 +150,45 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
   }
 
   /**
-   * A playlist é opcional e só aparece com o Spotify conectado. Sem ela o
+   * A playlist é opcional e só é oferecida com o Spotify conectado. Sem ela o
    * treino funciona igual — o Spotify nunca é dependência para treinar.
    */
   const playlistRow = (): HTMLElement => {
-    const connected = isLoggedIn()
     const label = draft.spotifyPlaylistName ?? (draft.spotifyPlaylistUri ? 'Playlist salva' : null)
 
-    if (!connected) {
+    if (!isLoggedIn()) {
       return h(
         'div',
-        { class: 'summary' },
-        h('span', { class: 'muted' }, icon(ICONS.music, 16), h('span', { text: ' Playlist' })),
-        h('span', { class: 'muted', text: 'conecte o Spotify' }),
+        { class: 'row' },
+        h('span', { text: 'Playlist' }),
+        h('span', { class: 'muted-value', text: 'conecte o Spotify' }),
       )
     }
 
     return h(
-      'button',
-      {
-        class: 'summary tappable',
-        on: {
-          click: () =>
-            pickPlaylist((playlist) => {
-              if (playlist) {
-                draft.spotifyPlaylistUri = playlist.uri
-                draft.spotifyPlaylistName = playlist.name
-              } else {
-                delete draft.spotifyPlaylistUri
-                delete draft.spotifyPlaylistName
-              }
-              render()
-            }),
+      'div',
+      { class: 'row' },
+      h('span', { text: 'Playlist' }),
+      h(
+        'button',
+        {
+          class: `value wide${label ? ' accent' : ''}`,
+          on: {
+            click: () =>
+              pickPlaylist((playlist) => {
+                if (playlist) {
+                  draft.spotifyPlaylistUri = playlist.uri
+                  draft.spotifyPlaylistName = playlist.name
+                } else {
+                  delete draft.spotifyPlaylistUri
+                  delete draft.spotifyPlaylistName
+                }
+                render()
+              }),
+          },
         },
-      },
-      h('span', { class: 'muted' }, icon(ICONS.music, 16), h('span', { text: ' Playlist' })),
-      h('span', { text: label ?? 'escolher' }),
+        label ?? 'escolher',
+      ),
     )
   }
 
@@ -265,6 +268,8 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
     const nodes: HTMLElement[] = [
       topbar,
       nameInput,
+      h('div', { class: 'section-label', text: 'Música' }),
+      playlistRow(),
       h('div', { class: 'section-label', text: 'Tempos' }),
       ...FIELDS.map(numberRow),
       h('div', {
@@ -288,7 +293,6 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
         h('span', { text: 'Adicionar exercício' }),
       ),
       summary,
-      playlistRow(),
     ]
 
     if (!isNew) {

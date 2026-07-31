@@ -23,6 +23,21 @@ const FINISH_TONES: Tone[] = [
   { freq: 784, durationMs: 420, level: 0.9 },
 ]
 
+/** O que a tela de Preferências mostra para diagnosticar áudio mudo. */
+export interface AudioDiagnostics {
+  /** O navegador tem Web Audio. */
+  supported: boolean
+  /** 'ausente' antes do primeiro toque; depois, o estado do contexto. */
+  state: 'ausente' | AudioContextState
+  /**
+   * Conseguimos declarar o áudio como reprodução em vez de som ambiente.
+   * Sem isso, no iPhone o interruptor lateral no silencioso emudece os bipes.
+   */
+  playbackSession: boolean
+  /** Quantos tons foram agendados desde que o app abriu. */
+  scheduled: number
+}
+
 export interface Beeper {
   /** Precisa ser chamado dentro de um gesto do usuário; iOS exige isso. */
   unlock(): Promise<void>
@@ -36,14 +51,35 @@ export interface Beeper {
   cancel(): void
   /** Falso enquanto o navegador não tiver liberado o áudio. */
   isReady(): boolean
-  /** Amplifica os bipes quando a música não pode ser abaixada (Fase 2). */
-  setBoost(boost: boolean): void
+  diagnostics(): AudioDiagnostics
+}
+
+type AudioSessionCapable = Navigator & { audioSession?: { type: string } }
+
+/**
+ * Declara o áudio como reprodução, e não como som ambiente.
+ *
+ * No iPhone essa é a diferença entre os bipes tocarem e não tocarem: por
+ * padrão, som gerado pela Web Audio é classificado como ambiente e o
+ * interruptor lateral de silencioso o emudece por completo — sem erro, sem
+ * aviso, simplesmente sem som. Disponível a partir do iOS 16.4.
+ */
+function requestPlaybackSession(): boolean {
+  const session = (navigator as AudioSessionCapable).audioSession
+  if (!session) return false
+  try {
+    session.type = 'playback'
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function createBeeper(getSettings: () => Settings): Beeper {
   let ctx: AudioContext | null = null
   let scheduled: OscillatorNode[] = []
-  let boost = false
+  let playbackSession = false
+  let scheduledCount = 0
 
   const ensureContext = (): AudioContext | null => {
     if (ctx) return ctx
@@ -51,6 +87,9 @@ export function createBeeper(getSettings: () => Settings): Beeper {
       globalThis.AudioContext ??
       (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
     if (!Ctor) return null
+    // A sessão é declarada antes de existir contexto: no iOS a classificação
+    // vale para o que vier depois.
+    playbackSession = requestPlaybackSession()
     ctx = new Ctor()
     return ctx
   }
@@ -62,7 +101,7 @@ export function createBeeper(getSettings: () => Settings): Beeper {
    */
   const tone = (audio: AudioContext, spec: Tone, atSeconds: number): void => {
     const settings = getSettings()
-    const volume = settings.volume * spec.level * (boost ? 1.6 : 1)
+    const volume = settings.volume * spec.level
     if (volume <= 0) return
 
     const osc = audio.createOscillator()
@@ -85,6 +124,7 @@ export function createBeeper(getSettings: () => Settings): Beeper {
       gain.disconnect()
     }
     scheduled.push(osc)
+    scheduledCount += 1
   }
 
   const playSequence = (tones: Tone[], startAt: number): void => {
@@ -97,16 +137,27 @@ export function createBeeper(getSettings: () => Settings): Beeper {
     }
   }
 
+  /**
+   * O iOS suspende o contexto por conta própria — ao voltar do segundo plano,
+   * ao atender uma ligação. Reanimar antes de agendar evita o caso em que
+   * tudo parece certo e nada soa.
+   */
+  const wake = (audio: AudioContext): void => {
+    if (audio.state === 'suspended') void audio.resume()
+  }
+
   return {
     async unlock() {
       const audio = ensureContext()
       if (!audio) return
+      if (!playbackSession) playbackSession = requestPlaybackSession()
       if (audio.state === 'suspended') await audio.resume()
     },
 
     scheduleSegment(kind, remainingMs, playOpening = true) {
       const audio = ensureContext()
       if (!audio || !getSettings().soundEnabled) return
+      wake(audio)
 
       const now = audio.currentTime
       if (playOpening) playSequence(kind === 'work' ? WORK_TONES : REST_TONE, now)
@@ -123,6 +174,7 @@ export function createBeeper(getSettings: () => Settings): Beeper {
     playFinish() {
       const audio = ensureContext()
       if (!audio) return
+      wake(audio)
       playSequence(FINISH_TONES, audio.currentTime)
     },
 
@@ -143,8 +195,16 @@ export function createBeeper(getSettings: () => Settings): Beeper {
       return ctx !== null && ctx.state === 'running'
     },
 
-    setBoost(value) {
-      boost = value
+    diagnostics() {
+      const Ctor =
+        globalThis.AudioContext ??
+        (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      return {
+        supported: Boolean(Ctor),
+        state: ctx?.state ?? 'ausente',
+        playbackSession,
+        scheduled: scheduledCount,
+      }
     },
   }
 }

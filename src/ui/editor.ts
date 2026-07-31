@@ -4,8 +4,6 @@ import { createAnimation, getExercise } from '../exercises'
 import { workoutDurationSec, formatDuration } from '../engine/timeline'
 import { newWorkoutId } from '../storage'
 import { DEFAULT_WORKOUT, type Workout } from '../types'
-import { isLoggedIn } from '../spotify/auth'
-import { pickPlaylist } from './spotify-ui'
 import type { AppContext } from './context'
 
 const SECONDS_OPTIONS = [
@@ -149,49 +147,6 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
     )
   }
 
-  /**
-   * A playlist é opcional e só é oferecida com o Spotify conectado. Sem ela o
-   * treino funciona igual — o Spotify nunca é dependência para treinar.
-   */
-  const playlistRow = (): HTMLElement => {
-    const label = draft.spotifyPlaylistName ?? (draft.spotifyPlaylistUri ? 'Playlist salva' : null)
-
-    if (!isLoggedIn()) {
-      return h(
-        'div',
-        { class: 'row' },
-        h('span', { text: 'Playlist' }),
-        h('span', { class: 'muted-value', text: 'conecte o Spotify' }),
-      )
-    }
-
-    return h(
-      'div',
-      { class: 'row' },
-      h('span', { text: 'Playlist' }),
-      h(
-        'button',
-        {
-          class: `value wide${label ? ' accent' : ''}`,
-          on: {
-            click: () =>
-              pickPlaylist((playlist) => {
-                if (playlist) {
-                  draft.spotifyPlaylistUri = playlist.uri
-                  draft.spotifyPlaylistName = playlist.name
-                } else {
-                  delete draft.spotifyPlaylistUri
-                  delete draft.spotifyPlaylistName
-                }
-                render()
-              }),
-          },
-        },
-        label ?? 'escolher',
-      ),
-    )
-  }
-
   const save = (): void => {
     if (draft.exerciseIds.length === 0) return
     draft.name = draft.name.trim() || 'Treino sem nome'
@@ -268,8 +223,6 @@ export function renderEditor(ctx: AppContext, id: string): HTMLElement {
     const nodes: HTMLElement[] = [
       topbar,
       nameInput,
-      h('div', { class: 'section-label', text: 'Música' }),
-      playlistRow(),
       h('div', { class: 'section-label', text: 'Tempos' }),
       ...FIELDS.map(numberRow),
       h('div', {

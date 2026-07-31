@@ -17,24 +17,17 @@ exercício é executado.
 - Dez exercícios de peso corporal, cada um com sua animação.
 - Funciona sem internet e mantém a tela acesa durante o treino.
 - Nada sai do aparelho: os treinos ficam guardados no próprio celular.
-- Spotify opcional: vincule uma playlist ao treino e ela começa junto com ele.
 
-## Spotify
+## Sobre música
 
-A música é **independente do treino**. O app dá o play inicial e nada mais:
-pausar, pular ou terminar o treino não mexem na reprodução. Só os botões da
-barra de música — pausar, pular faixa e desligar — e a redução de volume
-durante a contagem regressiva, que abaixa por cinco segundos e devolve o
-volume, sem nunca interromper a música. Essa redução se desliga nas
-Preferências.
+Não há integração com serviços de música, e isso é uma decisão, não uma
+pendência. Uma integração com o Spotify chegou a ser construída e foi
+removida: como o player web do Spotify não funciona em navegador de celular,
+o app do Spotify precisava estar aberto e tocando de qualquer forma, e o que
+sobrava não justificava o peso.
 
-Requer **Spotify Premium** — a API de controle remoto é bloqueada em conta
-grátis — e um identificador de app, criado uma vez. O app explica o passo a
-passo em **Preferências → Conectar ao Spotify**, já com o endereço de retorno
-pronto para copiar.
-
-Sem internet, sem Premium ou sem login, a seção do Spotify some da tela e o
-timer funciona exatamente igual. O Spotify nunca é dependência para treinar.
+Toque sua música pelo app que preferir e deixe o HIIT por cima. Os bipes se
+declaram como áudio de reprodução, então convivem com a música tocando.
 
 ## Rodando na sua máquina
 
@@ -87,7 +80,6 @@ src/
   audio/       bipes sintetizados na hora pela Web Audio API
   exercises/   biblioteca de exercícios e suas animações SVG
   storage/     leitura e escrita no armazenamento do navegador
-  spotify/     autenticação, chamadas à API e o controlador de música
   ui/          as três telas e o roteamento
 ```
 
@@ -100,6 +92,6 @@ cada tique. Por isso o cronômetro continua certo depois de o app passar um
 tempo em segundo plano — e por isso, ao voltar, ele não dispara de uma vez
 todos os bipes que perdeu.
 
-O desenho completo do projeto, incluindo os riscos conhecidos e a etapa
-planejada de integração com o Spotify, está em
+O desenho completo do projeto, incluindo os riscos conhecidos e o registro da
+integração com o Spotify que foi construída e removida, está em
 [`docs/superpowers/specs/2026-07-30-app-hiit-design.md`](docs/superpowers/specs/2026-07-30-app-hiit-design.md).

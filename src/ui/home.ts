@@ -1,6 +1,5 @@
 import { h, icon, ICONS } from './dom'
 import { openSheet, closeSheet } from './sheet'
-import { spotifySettingsRows } from './spotify-ui'
 import { workoutDurationSec, formatDuration } from '../engine/timeline'
 import type { AppContext } from './context'
 import type { Workout } from '../types'
@@ -37,26 +36,7 @@ function workoutCard(workout: Workout, ctx: AppContext): HTMLElement {
     h(
       'div',
       { class: 'info' },
-      h(
-        'div',
-        { class: 'name-row' },
-        h('div', { class: 'name', text: workout.name }),
-        // Marca de relance quais treinos têm playlist vinculada — sem isso, a
-        // única forma de saber era abrir o editor.
-        workout.spotifyPlaylistUri
-          ? h(
-              'span',
-              {
-                class: 'has-music',
-                attrs: {
-                  title: workout.spotifyPlaylistName ?? 'Com playlist',
-                  'aria-label': 'Este treino tem playlist',
-                },
-              },
-              icon(ICONS.music, 15),
-            )
-          : null,
-      ),
+      h('div', { class: 'name', text: workout.name }),
       h(
         'div',
         { class: 'tags' },
@@ -73,6 +53,31 @@ function workoutCard(workout: Workout, ctx: AppContext): HTMLElement {
       ),
     ),
     play,
+  )
+}
+
+/**
+ * Estado do áudio em texto claro. Existe porque som mudo no celular não gera
+ * erro nenhum — sem isto, a única informação disponível é "não ouvi nada".
+ */
+function audioDiagnostics(ctx: AppContext): HTMLElement {
+  const diag = ctx.beeper.diagnostics()
+
+  let status: string
+  if (!diag.supported) status = 'Este navegador não consegue gerar som.'
+  else if (diag.state === 'running') status = 'Áudio ativo.'
+  else if (diag.state === 'ausente') status = 'Áudio ainda não iniciado — toque no aviso de teste.'
+  else status = `Áudio ${diag.state} — toque no aviso de teste para reativar.`
+
+  const silentSwitch = diag.playbackSession
+    ? 'Os bipes tocam mesmo com o telefone no silencioso.'
+    : 'Este navegador não permite ignorar o interruptor de silencioso. Se não ouvir nada, tire o telefone do silencioso.'
+
+  return h(
+    'div',
+    { class: 'sheet-note' },
+    h('p', { text: status }),
+    h('p', { text: silentSwitch }),
   )
 }
 
@@ -132,19 +137,21 @@ function settingsSheet(ctx: AppContext): void {
       volumeValue,
     ),
     h('div', { class: 'sheet-item' }, slider),
-    h('div', {
+    h('button', {
       class: 'sheet-item',
       text: 'Tocar um aviso de teste',
       on: {
         click: () => {
-          void ctx.beeper.unlock().then(() => ctx.beeper.scheduleSegment('work', 0))
+          void ctx.beeper.unlock().then(() => {
+            ctx.beeper.scheduleSegment('work', 0)
+            // Reabre para o diagnóstico refletir o estado depois do toque.
+            closeSheet()
+            settingsSheet(ctx)
+          })
         },
       },
     }),
-    ...spotifySettingsRows(ctx, () => {
-      closeSheet()
-      settingsSheet(ctx)
-    }),
+    audioDiagnostics(ctx),
   )
 
   openSheet('Preferências', body)

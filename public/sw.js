@@ -3,7 +3,9 @@
    simples: guardar tudo o que for pedido e servir do cache primeiro. Depois da
    primeira visita o app abre sem rede nenhuma. */
 
-const CACHE = 'hiit-v1'
+// Trocar a versão descarta o cache anterior por completo na ativação. Serve
+// para garantir que uma correção chegue mesmo em aparelhos com cache teimoso.
+const CACHE = 'hiit-v2'
 const SCOPE = new URL(self.registration.scope).pathname
 
 const SHELL = [SCOPE, `${SCOPE}index.html`, `${SCOPE}manifest.webmanifest`]

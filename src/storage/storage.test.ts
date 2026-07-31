@@ -87,10 +87,14 @@ describe('treinos', () => {
     expect(workout?.restSec).toBe(0)
   })
 
-  it('preserva a playlist do Spotify quando existe', () => {
-    const storage = createStorage(fakeStore())
-    storage.upsertWorkout(makeWorkout({ spotifyPlaylistUri: 'spotify:playlist:abc' }))
-    expect(storage.getWorkout('w1')?.spotifyPlaylistUri).toBe('spotify:playlist:abc')
+  it('ignora campos desconhecidos de versões antigas', () => {
+    const store = fakeStore({
+      'hiit.workouts.v1': JSON.stringify([
+        { ...makeWorkout(), spotifyPlaylistUri: 'spotify:playlist:abc', campoInventado: 1 },
+      ]),
+    })
+    const workout = createStorage(store).loadWorkouts()[0]
+    expect(workout).toEqual(makeWorkout())
   })
 })
 
@@ -101,16 +105,9 @@ describe('preferências', () => {
 
   it('grava e lê de volta', () => {
     const storage = createStorage(fakeStore())
-    const settings = { soundEnabled: false, volume: 0.3, duckMusic: false }
+    const settings = { soundEnabled: false, volume: 0.3 }
     storage.saveSettings(settings)
     expect(storage.loadSettings()).toEqual(settings)
-  })
-
-  it('assume a redução de volume ligada quando o campo não existe', () => {
-    const store = fakeStore({
-      'hiit.settings.v1': JSON.stringify({ soundEnabled: true, volume: 0.5 }),
-    })
-    expect(createStorage(store).loadSettings().duckMusic).toBe(true)
   })
 
   it('limita o volume à faixa de zero a um', () => {

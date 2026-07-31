@@ -147,13 +147,6 @@ button {
   min-width: 0;
 }
 
-.name-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-}
-
 .workout-card .name {
   font-size: 16px;
   font-weight: 600;
@@ -161,13 +154,6 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-.has-music {
-  color: var(--work);
-  display: grid;
-  place-items: center;
-  flex: none;
 }
 
 .tags {
@@ -290,39 +276,9 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.stepper .value.accent,
-.value.accent {
+.stepper .value.accent {
   background: #14453a;
   color: #9fe1cb;
-}
-
-/* A playlist não tem passo para mais e para menos, então ocupa a largura que
-   os botões do stepper deixariam vazia. */
-.value.wide {
-  min-width: 74px;
-  max-width: 62%;
-  height: 40px;
-  border-radius: 10px;
-  background: #22262d;
-  font-size: 15px;
-  padding: 0 14px;
-  /* `display: block` em vez de grid: o recorte com reticências depende de um
-     contexto de linha, que o grid não fornece. */
-  display: block;
-  line-height: 40px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.value.wide:active {
-  background: #2c313a;
-}
-
-.muted-value {
-  color: var(--dim);
-  font-size: 14px;
 }
 
 .ex-row {
@@ -496,77 +452,17 @@ button {
   margin-top: 2px;
 }
 
-.sheet-section {
-  font-size: 11px;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: var(--dim);
-  padding: 18px 20px 4px;
-  border-top: 1px solid var(--line-soft);
-  margin-top: 8px;
-}
-
 .sheet-note {
-  padding: 4px 20px 8px;
+  padding: 12px 20px 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line-soft);
   font-size: 13px;
   color: var(--muted);
   line-height: 1.55;
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 .sheet-note p {
   margin: 6px 0;
-}
-
-.sheet-note ol {
-  margin: 6px 0;
-  padding-left: 20px;
-}
-
-.sheet-note li {
-  margin: 7px 0;
-}
-
-.sheet-note b {
-  color: var(--text);
-  font-weight: 600;
-}
-
-.sheet-note code {
-  display: inline-block;
-  background: var(--card);
-  border-radius: 6px;
-  padding: 4px 7px;
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--work);
-  word-break: break-all;
-}
-
-.sheet-item.danger {
-  color: var(--danger);
-}
-
-.field-input {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-size: 15px;
-  padding: 12px 14px;
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-.field-input:focus {
-  outline: none;
-  border-color: var(--work);
-}
-
-.summary.tappable:active {
-  background: #22262d;
 }
 
 /* Execução ---------------------------------------------------------------- */
@@ -715,45 +611,6 @@ button {
   color: #08120f;
 }
 
-.music-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--card);
-  border-radius: 10px;
-  padding: 8px 10px;
-  margin-top: 14px;
-  color: var(--muted);
-}
-
-.music-bar .track {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.music-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  color: var(--text);
-  flex: none;
-}
-
-.music-btn:active {
-  background: #2c313a;
-}
-
-.music-btn.off {
-  color: var(--danger);
-}
-
 .warning {
   background: #2a2013;
   color: #fac775;
@@ -762,26 +619,6 @@ button {
   font-size: 12.5px;
   line-height: 1.45;
   margin-top: 12px;
-}
-
-.notice-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.notice-btn {
-  background: #3d2f18;
-  color: #fac775;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13px;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.notice-btn:active {
-  background: #4a3a1e;
 }
 
 .finished {

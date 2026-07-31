@@ -29,8 +29,8 @@ aparelho. Toda decisão de interface abaixo serve a esse cenário.
 | Exercícios | Peso do corpo, sem equipamento | Corresponde ao uso real |
 | Som | Bipes sintéticos, nos últimos 5 segundos | Sem arquivos de áudio, instantâneos, offline |
 | Armazenamento | `localStorage` no aparelho | Sem servidor, sem conta, sem privacidade a gerenciar |
-| Hospedagem | GitHub Pages | Gratuito, HTTPS, endereço fixo — exigência tanto do PWA quanto do OAuth do Spotify |
-| Spotify | Fase 2, controle remoto via Spotify Connect | O player web do Spotify não funciona em navegador de celular; o controle remoto funciona e exige Premium |
+| Hospedagem | GitHub Pages | Gratuito, HTTPS, endereço fixo — exigência do PWA |
+| Música | Nenhuma integração | Construída para o Spotify e removida; ver seção 6 |
 
 ### Nome e crédito
 
@@ -50,10 +50,10 @@ lugares e é requisito, não enfeite:
 
 Criar, salvar e executar treinos, com som e animações, funcionando offline.
 
-### Fase 2 — Spotify
+### Fase 2 — Spotify (construída e removida)
 
-Login, vinculação de playlist ao treino, sincronização de reprodução e
-redução de volume durante a contagem regressiva.
+Foi construída por completo e depois retirada do projeto. O registro do
+porquê está na seção 6.
 
 ### Fora de escopo
 
@@ -61,7 +61,8 @@ Deliberadamente ausentes desta versão, e a ausência é uma decisão, não um
 esquecimento: histórico de treinos, contas de usuário, sincronização entre
 aparelhos, exercícios com equipamento, tempo diferente por exercício,
 treinos em blocos, gráficos de evolução, compartilhamento de treinos,
-integração com Apple Health ou Google Fit.
+integração com Apple Health ou Google Fit, e integração com qualquer serviço
+de música.
 
 ---
 
@@ -217,7 +218,6 @@ interface Workout {
   restSec: number         // padrão 20
   rounds: number          // padrão 3
   roundRestSec: number    // padrão 60
-  spotifyPlaylistUri?: string   // Fase 2
   createdAt: number
   updatedAt: number
 }
@@ -280,68 +280,35 @@ repositório.
 
 ---
 
-## 6. Fase 2 — Spotify
+## 6. Fase 2 — Spotify: por que foi removida
 
-### O princípio que rege esta fase
+A integração foi construída por inteiro — autenticação por PKCE, seleção de
+playlist, controles de reprodução na tela de execução e redução de volume
+durante a contagem regressiva — e depois retirada do projeto.
 
-**A música é independente do treino.** O app dá o pontapé inicial e nada
-mais: uma vez tocando, ela continua até que o usuário a pause ou a desligue.
-Pausar o treino não pausa a música. Terminar o treino não para a música. Sair
-da tela não para a música.
+O motivo é uma limitação que não tem contorno: **o player web do Spotify não
+funciona em navegador de celular**, restrição declarada por eles. Nosso app
+nunca poderia tocar música; no máximo comandaria um Spotify que já estivesse
+tocando em algum aparelho.
 
-Isso não é só preferência de uso — elimina toda a sincronização de estado
-entre duas máquinas que rodam em relógios diferentes, que era a parte mais
-frágil do desenho anterior.
+Na prática isso significava que o usuário precisava abrir o Spotify e dar
+play antes de começar o treino, de qualquer forma. O que a integração
+acrescentava a partir daí era pouco: comandar a música sem trocar de tela,
+ver o nome da faixa, e abaixar o volume nos cinco segundos de contagem — e
+essa última, a de maior valor, é justamente a que o cliente iOS do Spotify
+recusa.
 
-A única coisa que o app mexe sozinho é o volume, por cinco segundos, e mesmo
-isso é desligável.
+Custo mantido em troca disso: um fluxo de OAuth, dependência de conta
+Premium, dependência de internet no meio do treino, um cadastro manual no
+painel do Spotify, e um terço do código do app.
 
-### Fluxo
+**Decisão:** remover. O app volta a ser um timer que funciona offline e não
+depende de nada. Quem quiser música toca pelo app que preferir; os bipes se
+declaram como áudio de reprodução e convivem com ela.
 
-**Autenticação:** OAuth 2.0 com PKCE, que é o fluxo próprio para aplicações
-que rodam no navegador e não podem guardar segredo. O app gera um
-`code_verifier`, envia o desafio SHA-256, e troca o código por token
-diretamente. Nenhum segredo no código-fonte — o que é necessário, já que o
-repositório é público.
-
-Escopos: `playlist-read-private`, `playlist-read-collaborative`,
-`user-read-playback-state`, `user-modify-playback-state`.
-
-Tokens ficam em `localStorage` e são renovados pelo `refresh_token`.
-
-O identificador do app do Spotify é informado uma vez nas Preferências e
-guardado no aparelho. Ele não é segredo — no fluxo PKCE o identificador é
-público por desenho —, mas mantê-lo fora do código evita que o app dependa de
-um novo build para funcionar.
-
-**No editor:** um campo de playlist que lista as playlists da conta.
-
-**Na execução:**
-
-| Gatilho | Chamada ao Spotify |
-| --- | --- |
-| Iniciar o treino | `PUT /me/player/play` com o `context_uri` da playlist |
-| Botão de pausar música | `PUT /me/player/pause` |
-| Botão de retomar música | `PUT /me/player/play` |
-| Botão de desligar música | `PUT /me/player/pause` e some com os controles |
-| Botão de pular faixa | `POST /me/player/next` |
-| Entrar nos últimos 5 s | `PUT /me/player/volume` para 30% do valor atual |
-| Virar a fase | `PUT /me/player/volume` restaurando o valor anterior |
-| A cada 8 s, com a tela aberta | `GET /me/player` para o nome da faixa e o volume |
-
-Nada mais mexe na reprodução. Em particular, **pausar, pular, voltar,
-terminar ou sair do treino não emitem nenhuma chamada ao Spotify.**
-
-**Redução de volume:** liga e desliga nas Preferências, e vem ligada. Ela
-abaixa, nunca interrompe — a música continua tocando durante a contagem.
-
-**Sem dispositivo ativo:** se `GET /me/player` não retornar dispositivo, o
-app instrui a abrir o Spotify e tocar qualquer música uma vez, em vez de
-falhar em silêncio.
-
-**Degradação:** sem internet, sem Premium, sem identificador de app ou sem
-login, a seção do Spotify some da tela e o timer funciona exatamente igual.
-**O Spotify nunca é dependência para treinar.**
+Fica o registro para que a ideia não seja reintroduzida sem que essa
+limitação seja reavaliada primeiro. Se um dia o app virar nativo, o SDK do
+Spotify para iOS não tem essa restrição — aí a conta muda.
 
 ---
 
@@ -350,18 +317,18 @@ login, a seção do Spotify some da tela e o timer funciona exatamente igual.
 Registrados aqui porque afetam o que pode ser prometido, e nenhum deles é
 resolvível por código melhor.
 
-**1. Controle de volume no cliente iOS do Spotify.** A API de volume do
-Spotify não funciona quando a reprodução está no próprio app do iPhone — é
-limitação documentada do cliente deles. Funciona normalmente em caixa de som,
-Spotify Connect ou desktop.
-*Tratamento:* o app detecta a rejeição, desliga a redução de volume para a
-sessão, avisa uma única vez e compensa aumentando o ganho dos bipes.
+**1. Áudio classificado como som ambiente no iOS.** Por padrão, som gerado
+pela Web Audio é tratado como ambiente e emudecido pelo interruptor lateral
+de silencioso — sem erro e sem aviso.
+*Tratamento:* o app declara a sessão como reprodução (`navigator.audioSession`,
+iOS 16.4+), o que faz os bipes tocarem mesmo no silencioso. Onde a API não
+existir, as Preferências dizem isso em texto claro e orientam a tirar o
+aparelho do silencioso.
 
-**2. OAuth em PWA instalado no iOS.** O retorno do login do Spotify pode
-abrir no Safari em vez de voltar ao app instalado, perdendo o contexto.
-*Tratamento:* validar no aparelho real antes de construir o resto da Fase 2;
-se falhar, o login passa a ser feito uma vez pelo Safari, com o token
-compartilhado pelo mesmo domínio.
+**2. Contexto de áudio suspenso pelo sistema.** O iOS suspende o contexto ao
+mandar o app para segundo plano ou durante uma ligação.
+*Tratamento:* o contexto é reanimado ao voltar para a tela e antes de cada
+agendamento; as Preferências mostram o estado atual.
 
 **3. Áudio com a tela bloqueada.** Se o usuário bloquear a tela
 deliberadamente, os bipes de uma PWA no iOS provavelmente não tocam. O
@@ -438,6 +405,4 @@ O app está pronto quando, num iPhone, tudo isto é verdade:
 7. Manifesto, Service Worker, Wake Lock.
 8. Publicação no GitHub Pages e instalação no aparelho.
 9. **Fase 1 concluída — uso real por alguns treinos antes de seguir.**
-10. Fase 2: autenticação do Spotify, validada primeiro no iPhone.
-11. Fase 2: playlist no editor, sincronização de reprodução, redução de
-    volume com degradação.
+10. ~~Fase 2: Spotify.~~ Construída e removida; ver seção 6.

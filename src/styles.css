@@ -274,12 +274,10 @@ button {
   fill: var(--work);
 }
 
+/* Uma coluna só: em duas não sobra espaço para a variação do dia sem
+   espremer o campo de digitação. */
 .weight-list {
-  display: grid;
-  /* `minmax(0, 1fr)` e não `1fr`: a largura mínima automática dos itens de
-     grade empurraria as colunas para fora da tela. */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 12px;
+  display: block;
 }
 
 .weight-row {
@@ -334,6 +332,25 @@ button {
   font-size: 12px;
   color: var(--dim);
   flex: none;
+}
+
+.weight-row .delta {
+  width: 62px;
+  flex: none;
+  text-align: right;
+  font-size: 13.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.weight-summary .day-delta {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Editor ------------------------------------------------------------------ */

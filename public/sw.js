@@ -5,7 +5,7 @@
 
 // Trocar a versão descarta o cache anterior por completo na ativação. Serve
 // para garantir que uma correção chegue mesmo em aparelhos com cache teimoso.
-const CACHE = 'hiit-v3'
+const CACHE = 'hiit-v4'
 const SCOPE = new URL(self.registration.scope).pathname
 
 const SHELL = [SCOPE, `${SCOPE}index.html`, `${SCOPE}manifest.webmanifest`]

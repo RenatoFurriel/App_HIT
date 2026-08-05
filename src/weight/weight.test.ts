@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   WEIGHT_DAYS,
   chartGeometry,
+  dailyDeltas,
   emptyLog,
   formatDelta,
   formatWeight,
@@ -119,6 +120,55 @@ describe('summarize', () => {
 
   it('registra ganho de peso com sinal positivo', () => {
     expect(summarize(logFrom({ 1: 78, 4: 79.5 })).delta).toBe(1.5)
+  })
+})
+
+describe('variação do dia', () => {
+  it('não existe no primeiro registro nem em dia vazio', () => {
+    const deltas = dailyDeltas(logFrom({ 3: 82 }))
+    expect(deltas[2]).toBeNull()
+    expect(deltas[0]).toBeNull()
+  })
+
+  it('compara com o dia preenchido anterior, e não com o dia de calendário', () => {
+    // Dia 4 vazio: o dia 7 se compara com o dia 2.
+    const deltas = dailyDeltas(logFrom({ 2: 82, 7: 81.4, 8: 81.5 }))
+    expect(deltas[6]).toBe(-0.6)
+    expect(deltas[7]).toBe(0.1)
+  })
+
+  it('registra ganho com sinal positivo', () => {
+    expect(dailyDeltas(logFrom({ 1: 80, 2: 80.6 }))[1]).toBe(0.6)
+  })
+
+  it('devolve tudo vazio para registro vazio', () => {
+    expect(dailyDeltas(emptyLog()).every((d) => d === null)).toBe(true)
+  })
+
+  it('não acumula erro de ponto flutuante', () => {
+    const deltas = dailyDeltas(logFrom({ 1: 82.4, 2: 82.1, 3: 81.8 }))
+    expect(deltas[1]).toBe(-0.3)
+    expect(deltas[2]).toBe(-0.3)
+  })
+})
+
+describe('resumo do último dia', () => {
+  it('mede o último contra o penúltimo registro', () => {
+    const s = summarize(logFrom({ 1: 82.4, 5: 81, 9: 80.6 }))
+    expect(s.lastDelta).toBe(-0.4)
+    expect(s.previousDay).toBe(5)
+    // O acumulado continua sendo do primeiro ao último.
+    expect(s.delta).toBe(-1.8)
+  })
+
+  it('não existe com um único registro', () => {
+    const s = summarize(logFrom({ 1: 82 }))
+    expect(s.lastDelta).toBeNull()
+    expect(s.previousDay).toBeNull()
+  })
+
+  it('não existe com o registro vazio', () => {
+    expect(summarize(emptyLog()).lastDelta).toBeNull()
   })
 })
 

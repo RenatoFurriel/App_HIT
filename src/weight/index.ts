@@ -68,6 +68,10 @@ export interface WeightSummary {
   last: number | null
   /** Último menos primeiro. `null` com menos de dois registros. */
   delta: number | null
+  /** Último menos o penúltimo registro — o resultado do dia. */
+  lastDelta: number | null
+  /** Dia do penúltimo registro, para dizer "desde o dia N". */
+  previousDay: number | null
   min: number | null
   max: number | null
   /** Dia (1-indexado) do primeiro e do último registro. */
@@ -90,6 +94,8 @@ export function summarize(log: WeightLog): WeightSummary {
       first: null,
       last: null,
       delta: null,
+      lastDelta: null,
+      previousDay: null,
       min: null,
       max: null,
       firstDay: null,
@@ -98,6 +104,7 @@ export function summarize(log: WeightLog): WeightSummary {
   }
 
   const values = entries.map((e) => e.value)
+  const previous = entries[entries.length - 2]
 
   return {
     count: entries.length,
@@ -105,11 +112,31 @@ export function summarize(log: WeightLog): WeightSummary {
     last: last.value,
     // Um único registro não define variação nenhuma.
     delta: entries.length >= 2 ? round1(last.value - first.value) : null,
+    lastDelta: previous ? round1(last.value - previous.value) : null,
+    previousDay: previous?.day ?? null,
     min: Math.min(...values),
     max: Math.max(...values),
     firstDay: first.day,
     lastDay: last.day,
   }
+}
+
+/**
+ * Variação de cada dia em relação ao dia preenchido anterior — o resultado
+ * daquele dia. `null` em dia vazio e no primeiro registro, que não tem
+ * anterior com que se comparar.
+ */
+export function dailyDeltas(log: WeightLog): (number | null)[] {
+  const deltas: (number | null)[] = Array.from({ length: WEIGHT_DAYS }, () => null)
+  let previous: number | null = null
+
+  log.forEach((value, index) => {
+    if (value === null) return
+    if (previous !== null) deltas[index] = round1(value - previous)
+    previous = value
+  })
+
+  return deltas
 }
 
 export interface ChartPoint {

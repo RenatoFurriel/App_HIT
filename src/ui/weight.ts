@@ -3,6 +3,7 @@ import { confirmSheet } from './sheet'
 import {
   WEIGHT_DAYS,
   chartGeometry,
+  dailyDeltas,
   emptyLog,
   formatDelta,
   formatWeight,
@@ -127,12 +128,18 @@ export function renderWeight(ctx: AppContext): HTMLElement {
       h('div', { class: 'big', text: `${formatDelta(s.delta)} kg` }),
       h('div', {
         class: 'sub',
-        text: `do dia ${s.firstDay} ao dia ${s.lastDay} · ${formatWeight(s.first)} → ${formatWeight(s.last)} kg`,
+        text: `acumulado do dia ${s.firstDay} ao dia ${s.lastDay} · ${formatWeight(s.first)} → ${formatWeight(s.last)} kg`,
       }),
+      s.lastDelta !== null
+        ? h('div', {
+            class: 'day-delta',
+            text: `${formatDelta(s.lastDelta)} kg desde o dia ${s.previousDay}`,
+          })
+        : null,
     )
   }
 
-  const dayRow = (day: number): HTMLElement => {
+  const dayRow = (day: number, delta: number | null): HTMLElement => {
     const current = log[day - 1] ?? null
 
     const input = h('input', {
@@ -175,6 +182,8 @@ export function renderWeight(ctx: AppContext): HTMLElement {
       h('span', { class: 'day', text: `Dia ${day}` }),
       input,
       h('span', { class: 'unit', text: 'kg' }),
+      // O resultado daquele dia, medido contra o dia preenchido anterior.
+      h('span', { class: 'delta', text: delta === null ? '' : formatDelta(delta) }),
     )
   }
 
@@ -195,8 +204,11 @@ export function renderWeight(ctx: AppContext): HTMLElement {
       h('span', { class: 'icon-btn' }),
     )
 
+    const deltas = dailyDeltas(log)
     const rows = h('div', { class: 'weight-list' })
-    for (let day = 1; day <= WEIGHT_DAYS; day++) rows.append(dayRow(day))
+    for (let day = 1; day <= WEIGHT_DAYS; day++) {
+      rows.append(dayRow(day, deltas[day - 1] ?? null))
+    }
 
     const hasAny = log.some((v) => v !== null)
 

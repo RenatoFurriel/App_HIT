@@ -201,6 +201,141 @@ button {
   margin-top: 4px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+/* Peso -------------------------------------------------------------------- */
+
+.weight-summary {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.weight-summary .big {
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.weight-summary .sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.weight-summary.empty {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.chart-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 10px 6px;
+}
+
+.weight-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.weight-chart .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.weight-chart .axis {
+  fill: var(--dim);
+  font-size: 10px;
+  font-family: inherit;
+}
+
+.weight-chart .line {
+  fill: none;
+  stroke: var(--work);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.weight-chart .dot {
+  fill: var(--work);
+}
+
+.weight-list {
+  display: grid;
+  /* `minmax(0, 1fr)` e não `1fr`: a largura mínima automática dos itens de
+     grade empurraria as colunas para fora da tela. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.weight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.weight-row .day {
+  font-size: 13px;
+  color: var(--muted);
+  width: 46px;
+  flex: none;
+}
+
+.weight-row.filled .day {
+  color: var(--text);
+}
+
+.weight-input {
+  flex: 1;
+  min-width: 0;
+  background: #22262d;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 8px 4px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.weight-input::placeholder {
+  color: var(--dim);
+}
+
+.weight-input:focus {
+  outline: none;
+  border-color: var(--work);
+}
+
+.weight-input.invalid {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.weight-row .unit {
+  font-size: 12px;
+  color: var(--dim);
+  flex: none;
+}
+
 /* Editor ------------------------------------------------------------------ */
 
 .section-label {

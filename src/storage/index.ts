@@ -1,7 +1,9 @@
 import { DEFAULT_SETTINGS, type Settings, type Workout } from '../types'
+import { emptyLog, normalizeLog, type WeightLog } from '../weight'
 
 const WORKOUTS_KEY = 'hiit.workouts.v1'
 const SETTINGS_KEY = 'hiit.settings.v1'
+const WEIGHTS_KEY = 'hiit.weights.v1'
 
 /** Só o que este módulo usa de `localStorage`, para poder ser testado sem navegador. */
 export interface KeyValueStore {
@@ -134,6 +136,24 @@ export function createStorage(store: KeyValueStore = defaultStore()) {
         store.setItem(SETTINGS_KEY, JSON.stringify(settings))
       } catch {
         // Mesma tolerância da gravação de treinos.
+      }
+    },
+
+    loadWeights(): WeightLog {
+      const raw = store.getItem(WEIGHTS_KEY)
+      if (!raw) return emptyLog()
+      try {
+        return normalizeLog(JSON.parse(raw))
+      } catch {
+        return emptyLog()
+      }
+    },
+
+    saveWeights(log: WeightLog): void {
+      try {
+        store.setItem(WEIGHTS_KEY, JSON.stringify(log))
+      } catch {
+        // Mesma tolerância das demais gravações.
       }
     },
   }

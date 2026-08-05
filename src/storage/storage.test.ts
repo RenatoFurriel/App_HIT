@@ -123,6 +123,37 @@ describe('preferências', () => {
   })
 })
 
+describe('peso', () => {
+  it('devolve quinze dias vazios quando não há nada gravado', () => {
+    const log = createStorage(fakeStore()).loadWeights()
+    expect(log).toHaveLength(15)
+    expect(log.every((v) => v === null)).toBe(true)
+  })
+
+  it('grava e lê de volta', () => {
+    const storage = createStorage(fakeStore())
+    const log = createStorage(fakeStore()).loadWeights()
+    log[0] = 82.4
+    log[7] = 80
+    storage.saveWeights(log)
+    expect(storage.loadWeights()[0]).toBe(82.4)
+    expect(storage.loadWeights()[7]).toBe(80)
+  })
+
+  it('cai no registro vazio diante de dado corrompido', () => {
+    const store = fakeStore({ 'hiit.weights.v1': '{{{' })
+    expect(createStorage(store).loadWeights().every((v) => v === null)).toBe(true)
+  })
+
+  it('descarta valores absurdos gravados por engano', () => {
+    const store = fakeStore({ 'hiit.weights.v1': JSON.stringify([82.4, 9999, -5]) })
+    const log = createStorage(store).loadWeights()
+    expect(log[0]).toBe(82.4)
+    expect(log[1]).toBeNull()
+    expect(log[2]).toBeNull()
+  })
+})
+
 describe('newWorkoutId', () => {
   it('não repete', () => {
     const ids = new Set(Array.from({ length: 200 }, newWorkoutId))

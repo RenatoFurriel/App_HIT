@@ -180,13 +180,26 @@ export function renderHome(ctx: AppContext): HTMLElement {
       { class: 'topbar' },
       h('h1', { text: 'Seus treinos' }),
       h(
-        'button',
-        {
-          class: 'icon-btn',
-          attrs: { 'aria-label': 'Preferências' },
-          on: { click: () => settingsSheet(ctx) },
-        },
-        icon(ICONS.settings, 22),
+        'div',
+        { class: 'topbar-actions' },
+        h(
+          'button',
+          {
+            class: 'icon-btn',
+            attrs: { 'aria-label': 'Acompanhamento de peso' },
+            on: { click: () => ctx.navigate('#/peso') },
+          },
+          icon(ICONS.chart, 22),
+        ),
+        h(
+          'button',
+          {
+            class: 'icon-btn',
+            attrs: { 'aria-label': 'Preferências' },
+            on: { click: () => settingsSheet(ctx) },
+          },
+          icon(ICONS.settings, 22),
+        ),
       ),
     ),
     list,

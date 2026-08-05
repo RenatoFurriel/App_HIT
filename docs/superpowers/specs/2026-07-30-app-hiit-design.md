@@ -60,9 +60,28 @@ porquê está na seção 6.
 Deliberadamente ausentes desta versão, e a ausência é uma decisão, não um
 esquecimento: histórico de treinos, contas de usuário, sincronização entre
 aparelhos, exercícios com equipamento, tempo diferente por exercício,
-treinos em blocos, gráficos de evolução, compartilhamento de treinos,
-integração com Apple Health ou Google Fit, e integração com qualquer serviço
-de música.
+treinos em blocos, compartilhamento de treinos, integração com Apple Health
+ou Google Fit, e integração com qualquer serviço de música.
+
+### Acréscimo — Acompanhamento de peso
+
+Adicionado depois da Fase 1, em tela própria. Quinze dias fixos, numerados de
+1 a 15 e sem vínculo com datas do calendário: pular um dia não quebra nada, e
+não há ciclos nem histórico de quinzenas anteriores — o registro é um só e é
+reeditável.
+
+Cada dia recebe um peso digitado, e não escolhido em seletor de rolagem: ao
+contrário dos tempos do treino, isto é preenchido uma vez ao acordar, sem
+pressa, e digitar é mais rápido do que rolar mil valores. A leitura aceita
+vírgula e ponto, porque o teclado brasileiro oferece vírgula.
+
+Abaixo, um gráfico de linha desenhado à mão em SVG — quinze pontos não
+justificam uma biblioteca, que custaria mais que o app inteiro e levaria
+junto a promessa de funcionar offline — e a variação desde o primeiro dia
+preenchido em destaque, que é a informação que a pessoa realmente procura.
+
+A variação é mostrada com sinal e sem cor de julgamento: perder peso não é
+universalmente o objetivo, e o app não opina sobre o seu.
 
 ---
 

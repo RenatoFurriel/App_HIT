@@ -17,6 +17,7 @@ exercício é executado.
 - Dez exercícios de peso corporal, cada um com sua animação.
 - Funciona sem internet e mantém a tela acesa durante o treino.
 - Nada sai do aparelho: os treinos ficam guardados no próprio celular.
+- Acompanhamento de peso de 15 dias, com gráfico de evolução.
 
 ## Sobre música
 
@@ -80,7 +81,8 @@ src/
   audio/       bipes sintetizados na hora pela Web Audio API
   exercises/   biblioteca de exercícios e suas animações SVG
   storage/     leitura e escrita no armazenamento do navegador
-  ui/          as três telas e o roteamento
+  weight/      registro de 15 dias, variação e geometria do gráfico
+  ui/          as telas e o roteamento
 ```
 
 A regra que mantém isso separado: o engine não sabe que existem tela e som; a

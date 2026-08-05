@@ -6,6 +6,7 @@ import { createBeeper } from './audio'
 import { renderHome } from './ui/home'
 import { renderEditor } from './ui/editor'
 import { renderRun } from './ui/run'
+import { renderWeight } from './ui/weight'
 import { closeSheet } from './ui/sheet'
 import { h } from './ui/dom'
 import type { AppContext } from './ui/context'
@@ -41,6 +42,7 @@ function route(): HTMLElement {
   if (editMatch?.[1]) return renderEditor(ctx, editMatch[1])
   const runMatch = /^#\/run\/(.+)$/.exec(hash)
   if (runMatch?.[1]) return renderRun(ctx, runMatch[1])
+  if (hash === '#/peso') return renderWeight(ctx)
   return renderHome(ctx)
 }
 
